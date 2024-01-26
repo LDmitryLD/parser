@@ -1,0 +1,312 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Documentation of Parser API.",
+    "title": "Parser.",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "paths": {
+    "/parser/delete/{id}": {
+      "delete": {
+        "tags": [
+          "parser"
+        ],
+        "summary": "Удаление вакансии по ID.",
+        "operationId": "DeleteRequest",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "ID",
+            "description": "ID вакансии",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteResponse"
+          }
+        }
+      }
+    },
+    "/parser/list": {
+      "get": {
+        "tags": [
+          "parser"
+        ],
+        "summary": "Получить список ваканский из имеющихся в базе.",
+        "operationId": "ListRequest",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ListResponse"
+          }
+        }
+      }
+    },
+    "/parser/search": {
+      "post": {
+        "tags": [
+          "parser"
+        ],
+        "summary": "Поиск вакансий.",
+        "operationId": "SearchRequest",
+        "parameters": [
+          {
+            "x-go-name": "Body",
+            "description": "Название вакансии\n\nrequierd:true",
+            "name": "query",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SearchRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/SearchResponse"
+          }
+        }
+      }
+    },
+    "/parser/{id}": {
+      "get": {
+        "tags": [
+          "parser"
+        ],
+        "summary": "Получение вакансии по ID.",
+        "operationId": "GetRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "ID вакансии\n\nrequierd:true",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Address": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "addressCountry": {
+          "$ref": "#/definitions/AddressCountry"
+        },
+        "addressLocality": {
+          "type": "string",
+          "x-go-name": "AddressLocality"
+        },
+        "streetAddress": {
+          "type": "string",
+          "x-go-name": "StreetAddress"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    },
+    "AddressCountry": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    },
+    "ApiResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Code"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    },
+    "HiringOrganization": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "logo": {
+          "type": "string",
+          "x-go-name": "Logo"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "sameAs": {
+          "type": "string",
+          "x-go-name": "SameAs"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    },
+    "Identifier": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    },
+    "JobLocation": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "address": {
+          "$ref": "#/definitions/Address"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    },
+    "SearchRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "x-go-name": "Query"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/modules/vacancy/controller"
+    },
+    "Vacancy": {
+      "type": "object",
+      "properties": {
+        "@context": {
+          "type": "string",
+          "x-go-name": "Context"
+        },
+        "@type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "datePosted": {
+          "type": "string",
+          "x-go-name": "DatePosted"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "employmentType": {
+          "type": "string",
+          "x-go-name": "EmploymentType"
+        },
+        "hiringOrganization": {
+          "$ref": "#/definitions/HiringOrganization"
+        },
+        "identifier": {
+          "$ref": "#/definitions/Identifier"
+        },
+        "jobLocation": {
+          "$ref": "#/definitions/JobLocation"
+        },
+        "jobLocationType": {
+          "type": "string",
+          "x-go-name": "JobLocationType"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        },
+        "validThrough": {
+          "type": "string",
+          "x-go-name": "ValidThrough"
+        }
+      },
+      "x-go-package": "projects/LDmitryLD/parser/app/internal/models"
+    }
+  },
+  "responses": {
+    "DeleteResponse": {
+      "description": "",
+      "schema": {
+        "$ref": "#/definitions/ApiResponse"
+      }
+    },
+    "GetResponse": {
+      "description": "",
+      "schema": {
+        "$ref": "#/definitions/Vacancy"
+      }
+    },
+    "ListResponse": {
+      "description": "",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Vacancy"
+        }
+      }
+    },
+    "SearchResponse": {
+      "description": "",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Vacancy"
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "SesurityDefinitions": []
+    },
+    {
+      "Bearer": []
+    },
+    {
+      "type": [
+        "basic"
+      ]
+    }
+  ]
+}
