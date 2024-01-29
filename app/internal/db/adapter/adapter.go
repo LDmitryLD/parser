@@ -195,7 +195,8 @@ func (s *SQLAdapter) Insert(vac models.Vacancy) (int, error) {
 		}
 	default:
 		log.Println("не удалось записать поле JobLocation в кэш")
-	
+
+	}
 
 	q := `
 		INSERT INTO vacancy
