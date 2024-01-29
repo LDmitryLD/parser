@@ -195,28 +195,7 @@ func (s *SQLAdapter) Insert(vac models.Vacancy) (int, error) {
 		}
 	default:
 		log.Println("не удалось записать поле JobLocation в кэш")
-	}
-
-	// jobLocMap, ok := vac.JobLocation.(map[string]interface{})
-	// if !ok {
-	// 	log.Println("не удалось преобразовать, cейчас будт пробовать в слайс, настоящее значение типа:", reflect.TypeOf(vac.JobLocation))
-	// 	jobLocArr, ok := vac.JobLocation.([]interface{})
-	// 	if !ok {
-	// 		log.Println("в слайс тоже не получилось")
-	// 	}
-
-	// 	jobLocRaw, err = json.Marshal(jobLocArr)
-	// 	if err != nil {
-	// 		log.Println("ошибка при маршалинге []interface{}, ", err)
-	// 	}
-
-	// } else {
-	// 	jobLocRaw, err = json.Marshal(jobLocMap)
-	// 	if err != nil {
-	// 		log.Println("Ошибка при маршалинге:", err)
-	// 		return 0, fmt.Errorf("ошибка при маршалинге")
-	// 	}
-	// }
+	
 
 	q := `
 		INSERT INTO vacancy
