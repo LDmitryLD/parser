@@ -21,6 +21,7 @@ const (
 	timeout  = 50 * time.Second
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.4 --name=Parser
 type Parser interface {
 	Search(query string) ([]models.Vacancy, error)
 }
@@ -29,7 +30,7 @@ type SeleniumParser struct {
 	wd selenium.WebDriver
 }
 
-func NewParser() *SeleniumParser {
+func NewParser() Parser {
 
 	wd := NewWebDriver()
 	return &SeleniumParser{

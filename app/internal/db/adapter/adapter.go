@@ -6,11 +6,11 @@ import (
 	"log"
 	"projects/LDmitryLD/parser/app/internal/infrastructure/errors"
 	"projects/LDmitryLD/parser/app/internal/models"
-	"reflect"
 
 	"github.com/jmoiron/sqlx"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.4 --name=SQLAdapterer
 type SQLAdapterer interface {
 	SelectVacancies(query string, list bool) ([]models.Vacancy, error)
 	SelectVacancy(id int) (models.Vacancy, error)
@@ -120,42 +120,6 @@ func (s *SQLAdapter) SelectVacancies(query string, list bool) ([]models.Vacancy,
 
 }
 
-// SELECT
-// 		v.context, v.type, v.date_posted, v.title, v.description, v.valid_through, v.job_location_type, v.employment_type,
-// 		h.type, h.name, h.logo, h.same_as,
-// 		i.type, i.name, i.value,
-// 		jl.type,
-// 		a.type, a.street_address, a.address_locality,
-// 		ac.type, ac.name
-// 	FROM
-// 		vacancy v
-// 		JOIN hiring_organization h ON v.id = h.vacancy_id
-// 		JOIN identifier i ON v.id = i.vacancy_id
-// 		JOIN job_location jl ON v.id = jl.vacancy_id
-// 		JOIN address a ON jl.id = a.job_location_id
-// 		JOIN address_country ac ON a.id = ac.address_id
-// 	`
-
-// rows, err := s.db.Query(q, query)
-// if err != nil {
-// 	log.Println("ошибка при запросе в бд списка вакансий:", err)
-// 	return nil, err
-// }
-
-// if !rows.Next() {
-// 	log.Println("совпадений нет")
-// 	return nil, fmt.Errorf("совпадений нет")
-// }
-
-// var vacs []models.Vacancy
-
-// for rows.Next() {
-// 	var vac models.Vacancy
-// 	err := rows.Scan(&vac.Context, &vac.Type, &vac
-
-// 	)
-// }
-
 func (s *SQLAdapter) SelectVacancy(id int) (models.Vacancy, error) {
 
 	q := `
@@ -210,55 +174,49 @@ func (s *SQLAdapter) SelectVacancy(id int) (models.Vacancy, error) {
 	vac.Identifier = ident
 
 	return vac, nil
-
-	// q := `
-	// 	SELECT
-	// 		v.context, v.type, v.date_posted, v.title, v.description, v.valid_through, v.job_location, v.job_location_type, v.employment_type,
-	// 		h.type, h.name, h.logo, h.same_as,
-	// 		i.type, i.name, i.value
-	// 	FROM
-	// 		vacancy v
-	// 		JOIN hiring_organization h ON v.id = h.vacancy_id
-	// 		JOIN identifier i ON v.id = i.vacancy_id
-	// 	WHERE
-	// 		v.id = $1
-	// 	LIMIT 1
-	// `
-	// var vac models.Vacancy
-
-	// if err := s.db.Get(&vac, q, id); err != nil {
-	// 	log.Println("ошибка s.db.Get()", err)
-	// 	return models.Vacancy{}, err
-	// }
-
-	// return vac, nil
 }
 
 func (s *SQLAdapter) Insert(vac models.Vacancy) (int, error) {
 	var jobLocRaw []byte
 	var err error
-	// попробовать переделать с if на type switch
-	// ну или вообще сначала попробовать маршалить не приведённое значение)
-	jobLocMap, ok := vac.JobLocation.(map[string]interface{})
-	if !ok {
-		log.Println("не удалось преобразовать, cейчас будт пробовать в слайс, настоящее значение типа:", reflect.TypeOf(vac.JobLocation))
-		jobLocArr, ok := vac.JobLocation.([]interface{})
-		if !ok {
-			log.Println("в слайс тоже не получилось")
-		}
 
-		jobLocRaw, err = json.Marshal(jobLocArr)
+	switch jobLoc := vac.JobLocation.(type) {
+	case map[string]interface{}:
+		jobLocRaw, err = json.Marshal(jobLoc)
 		if err != nil {
-			log.Println("ошибка при маршалинге []interface{}, ", err)
+			log.Println("ошибка при маршалинге:", err)
+			return 0, fmt.Errorf("ошибка при маршалинге: %s", err.Error())
 		}
-
-	} else {
-		jobLocRaw, err = json.Marshal(jobLocMap)
+	case []interface{}:
+		jobLocRaw, err = json.Marshal(jobLoc)
 		if err != nil {
-			log.Println("Ошибка при маршалинге:", err)
-			return 0, fmt.Errorf("ошибка при маршалинге")
+			log.Println("ошибка при маршалинге:", err)
+			return 0, fmt.Errorf("ошибка при маршалинге: %s", err.Error())
 		}
+	default:
+		log.Println("не удалось записать поле JobLocation в кэш")
 	}
+
+	// jobLocMap, ok := vac.JobLocation.(map[string]interface{})
+	// if !ok {
+	// 	log.Println("не удалось преобразовать, cейчас будт пробовать в слайс, настоящее значение типа:", reflect.TypeOf(vac.JobLocation))
+	// 	jobLocArr, ok := vac.JobLocation.([]interface{})
+	// 	if !ok {
+	// 		log.Println("в слайс тоже не получилось")
+	// 	}
+
+	// 	jobLocRaw, err = json.Marshal(jobLocArr)
+	// 	if err != nil {
+	// 		log.Println("ошибка при маршалинге []interface{}, ", err)
+	// 	}
+
+	// } else {
+	// 	jobLocRaw, err = json.Marshal(jobLocMap)
+	// 	if err != nil {
+	// 		log.Println("Ошибка при маршалинге:", err)
+	// 		return 0, fmt.Errorf("ошибка при маршалинге")
+	// 	}
+	// }
 
 	q := `
 		INSERT INTO vacancy
@@ -301,57 +259,8 @@ func (s *SQLAdapter) Insert(vac models.Vacancy) (int, error) {
 		log.Println("ошибка при записи в таблицу: ", err)
 		return 0, err
 	}
-	log.Println("данные записаны в бд! ID: ", id)
+
 	return id, nil
-
-	//	jobLoc := vac.JobLocation
-
-	// q = `
-	// 	INSERT INTO job_location
-	// 		(vacancy_id, type)
-	// 	VALUES
-	// 		($1, $2)
-	// `
-
-	// _, err = s.db.Exec(q, id, jobLoc.Type)
-	// if err != nil {
-	// 	log.Println("ошибка при записи в таблицу: ", err)
-	// 	return 0, err
-	// }
-
-	//addr := vac.JobLocation.Address
-
-	// q = `
-	// 	INSERT INTO address
-	// 		(job_location_id, type, street_address, address_locality)
-	// 	VALUES
-	// 		($1, $2, $3, $4)
-	// `
-
-	// _, err = s.db.Exec(q, id, addr.Type, addr.StreetAddress, addr.AddressLocality)
-	// if err != nil {
-	// 	log.Println("ошибка при записи в таблицу: ", err)
-	// 	return 0, err
-	// }
-
-	// addrCountry := addr.AddressCountry
-
-	// q = `
-	// 	INSERT INTO address_country
-	// 		(address_id, type, name)
-	// 	VALUES
-	// 		($1, $2, $3)
-	// `
-
-	// // _, err = s.db.Exec(q, id, addrCountry.Type, addrCountry.Name)
-	// // if err != nil {
-	// // 	log.Println("ошибка при записи в таблицу: ", err)
-	// // 	return 0, err
-	// // }
-
-	// return id, nil
-
-	//panic("emplement me ")
 }
 
 func (s *SQLAdapter) Delete(id int) error {

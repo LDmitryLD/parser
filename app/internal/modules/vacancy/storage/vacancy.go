@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.4 --name=VacancyStorager
 type VacancyStorager interface {
 	Search(query string) ([]models.Vacancy, error)
 	SearchByID(id int) (models.Vacancy, error)
@@ -44,9 +45,6 @@ func (v *VacancyStorage) SearchByID(id int) (models.Vacancy, error) {
 		return models.Vacancy{}, errors.ErrNotFound
 	}
 
-	log.Printf("вакансии с id % d eсть в базе, сейчас найдём", id)
-	log.Println(v.vacsByID)
-
 	vacancy, err := v.adapter.SelectVacancy(id)
 	if err != nil {
 		log.Printf("вакансия с id %d не найдена, ошибка: %s\n", id, err.Error())
@@ -54,7 +52,7 @@ func (v *VacancyStorage) SearchByID(id int) (models.Vacancy, error) {
 	}
 
 	v.vacsByID[id] = true
-
+	log.Println("Вакансии получены из бд")
 	return vacancy, nil
 }
 
@@ -89,7 +87,7 @@ func (v *VacancyStorage) Delete(id int) error {
 
 	if err := v.adapter.Delete(id); err != nil {
 		log.Println("ошибка при удалнии вакансии")
-		return nil
+		return err
 	}
 
 	delete(v.vacsByID, id)

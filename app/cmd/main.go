@@ -18,8 +18,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// TODO: сделать type switch, проверить обработку ошибок, попробовать заменить селениум парсер на интерфейс, почистить код
-
 func main() {
 	confDB := config.NewAppConfig().DB
 

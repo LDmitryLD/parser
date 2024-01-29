@@ -7,6 +7,7 @@ import (
 	"projects/LDmitryLD/parser/app/internal/parser"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.4 --name=Vacancyer
 type Vacancyer interface {
 	Search(query string) ([]models.Vacancy, error)
 	Get(id int) (models.Vacancy, error)
@@ -32,7 +33,7 @@ func (v *VacancyService) Search(query string) ([]models.Vacancy, error) {
 
 	vacs, err = v.storage.Search(query)
 	if err == nil {
-		log.Println("вакансии получены и БД:", len(vacs))
+		log.Println("вакансии получены и БД")
 		return vacs, nil
 	}
 

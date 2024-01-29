@@ -10,7 +10,7 @@ type Services struct {
 	Vacancy service.Vacancyer
 }
 
-func NewServices(storages *storages.Storages, parser *parser.SeleniumParser) *Services {
+func NewServices(storages *storages.Storages, parser parser.Parser) *Services {
 	vacService := service.NewVacanceService(parser, storages.Vacancy)
 
 	return &Services{
