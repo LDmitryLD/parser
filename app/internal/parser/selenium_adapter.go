@@ -7,8 +7,8 @@ import (
 	"math"
 	"net/http"
 	"projects/LDmitryLD/parser/app/internal/models"
+	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -18,7 +18,7 @@ import (
 
 const (
 	habrLink = "https://career.habr.com/"
-	timeout  = 50 * time.Second
+	timeout  = 40 * time.Second
 )
 
 //go:generate go run github.com/vektra/mockery/v2@v2.35.4 --name=Parser
@@ -55,6 +55,8 @@ func (p *SeleniumParser) Search(query string) ([]models.Vacancy, error) {
 	var vacs []models.Vacancy
 
 	for i := 1; i <= pagesCount; i++ {
+
+		log.Printf("идёт загрузка странницы №%d...\n", i)
 		p.getPage(i, query)
 		links, err := p.getLinks()
 		if err != nil {
@@ -161,15 +163,13 @@ func (p *SeleniumParser) pagesCount() (int, error) {
 }
 
 func pagesCount(countRaw string) (int, error) {
-	// count, err := strconv.Atoi(countRaw)
-	// if err != nil {
-	// 	log.Println("ошибка при приведении countRaw к int", err)
-	// 	return 0, err
-	// }
+	reg := regexp.MustCompile(`\d+`)
+	match := reg.FindString(countRaw)
+	if match == "" {
+		return 0, fmt.Errorf("ошибка при получении полличества вакансий")
+	}
 
-	numberStr := strings.TrimPrefix(countRaw, "Найдено ")
-	numberStr = strings.TrimSuffix(numberStr, " вакансий")
-	count, err := strconv.Atoi(numberStr)
+	count, err := strconv.Atoi(match)
 	if err != nil {
 		log.Println("Ошибка при преобразовании строки в число:", err)
 		return 0, err
